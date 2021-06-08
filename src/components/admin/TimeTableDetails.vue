@@ -23,8 +23,8 @@
                    mode="horizontal"
                    @select="change"
                    default-active="实验室1">
-            <el-menu-item :index="laboratory.laboratoryName"
-                          v-for="laboratory in laboratories"
+            <el-menu-item v-for="laboratory in laboratories"
+                          :index="laboratory.laboratoryName"
                           :key="laboratory.laboratoryName"
                           @click="allCourseByWeekAndLaboratory">
               {{ laboratory.laboratoryName }}
@@ -64,7 +64,7 @@ export default defineComponent({
       "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", '18'
     ])
     const numbers: Ref<number[]> = ref([1, 2, 3, 4, 5])
-    const laboratories: Ref<Laboratory> = ref({})
+    const laboratories: Ref<Laboratory[]> = ref([])
     const TimeTableQuery: Ref<TimeTableQuery> = ref({
       laboratory: "实验室1",
       week: "1",

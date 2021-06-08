@@ -6,8 +6,8 @@
                  mode="horizontal"
                  @select="change"
                  :default-active="laboratoryActive">
-          <el-menu-item :index="laboratory.laboratoryName"
-                        v-for="laboratory in laboratories"
+          <el-menu-item v-for="laboratory in laboratories"
+                        :index="(laboratory).laboratoryName"
                         :key="laboratory.laboratoryName"
           >
             {{ laboratory.laboratoryName }}
@@ -77,7 +77,7 @@ export default defineComponent({
     const course: Ref<Course> = ref({});
     const active: string | null = sessionStorage.getItem("currentSelectCourse");
     const laboratoryActive: string | null = sessionStorage.getItem("laboratoryActive");
-    const laboratories: Ref<Laboratory> = ref({})
+    const laboratories: Ref<Laboratory[]> = ref([])
     const selectMessage: Ref<{ laboratoryName?: string; courseName?: string }> = ref({})
     const results: Ref<CourseSelectList[]> = ref([]);
     const allCourse = () => {

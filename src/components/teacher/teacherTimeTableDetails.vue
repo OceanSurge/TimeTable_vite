@@ -41,9 +41,9 @@ export default defineComponent({
   name: "teacherTimeTableDetails",
   setup() {
     const userLogin: User = JSON.parse(sessionStorage.getItem("loginUser") as string) as User
-    const selectCourseDetail: Ref<TimeTable[]> = ref();
+    const selectCourseDetail: Ref<TimeTable[]> = ref([]);
     const courses: Ref<Course[]> = ref([]);
-    const courseName: Ref<string> = ref();
+    const courseName: Ref<string> = ref("");
     const active: string | null = sessionStorage.getItem("currentCourseByState");
     const selectCourseDetails = () => {
       axios({
@@ -64,8 +64,8 @@ export default defineComponent({
         data: JSON.parse(sessionStorage.getItem("loginUser") as string) as User
       }).then(resp => {
         courses.value = resp.data.data.courses
-        sessionStorage.setItem("currentCourseByState", courses.value[0].courseName)
-        courseName.value = courses.value[0].courseName
+        sessionStorage.setItem("currentCourseByState", courses.value[0].courseName as string)
+        courseName.value = courses.value[0].courseName as string
       })
     };
     allCourse();
