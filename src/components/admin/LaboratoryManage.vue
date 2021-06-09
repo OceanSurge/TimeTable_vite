@@ -14,7 +14,12 @@
           <el-carousel-item v-for="(laboratory,index) in laboratories"
                             :key="laboratory.id" class="carousel">
             <div class="container">
-              <img :src="laboratory.img" style="width: 400px;height: 250px">
+              <div class="img_container">
+                <img :src="laboratory.img" style="width: 400px;height: 250px">
+                <el-button type="danger" icon="el-icon-delete" circle
+                           @click="removeLaboratory(laboratory.id)"></el-button>
+              </div>
+
               <div>
                 <el-form label-width="100px" :model="laboratoryItem"
                          style="width: 400px"
@@ -60,25 +65,34 @@ export default defineComponent({
   },
   setup() {
     // onMounted(()=>(this.$refs.ea as typeof ElCarousel).next)
-    const laboratories: Ref<Laboratory[]> = ref([])
+    const laboratories: Ref<Laboratory[]> = ref([]);
     const size: Ref<number> = ref(0);
-    const elCarousel = ref({})
-    const laboratoryItem: Ref<Laboratory> = ref({})
+    const elCarousel = ref({});
+    const laboratoryItem: Ref<Laboratory> = ref({});
+
     onMounted(() => {
       (elCarousel.value as typeof ElCarousel).next();
-    })
+    });
 
-    axios({
-      method: "POST",
-      url: "LaboratoryManage"
-    }).then(resp => {
-      laboratories.value = resp.data.data.allLaboratory
-      size.value = resp.data.data.size
-      laboratoryItem.value = laboratories.value[0]
-    })
+    const LaboratoryManage = () => {
+      axios({
+        method: "POST",
+        url: "LaboratoryManage"
+      }).then(resp => {
+        laboratories.value = resp.data.data.allLaboratory
+        size.value = resp.data.data.size
+        laboratoryItem.value = laboratories.value[0]
+      })
+    };
+
+    onMounted(() => {
+      LaboratoryManage();
+    });
+
     const onChange = (pre: number, next: number) => {
       laboratoryItem.value = laboratories.value[pre]
-    }
+    };
+
     const commit = () => {
       axios({
         method: "POST",
@@ -87,10 +101,24 @@ export default defineComponent({
       }).then(resp => {
         alert(resp.data.message)
       })
-    }
+    };
+
     const addLaboratory = () => {
       router.push("/addLaboratory")
+    };
+
+    const removeLaboratory = (id: number) => {
+      axios({
+        method: "POST",
+        url: "/removeLaboratory",
+        params: {
+          id: id
+        }
+      }).then(resp => {
+
+      })
     }
+
     return {
       laboratories,
       size,
@@ -99,6 +127,7 @@ export default defineComponent({
       onChange,
       commit,
       addLaboratory,
+      removeLaboratory,
     }
   }
 })
@@ -126,6 +155,21 @@ export default defineComponent({
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+}
+
+/*.container{*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  justify-content: space-between;*/
+/*  align-items: center;*/
+/*}*/
+
+.img_container {
+  width: 600px;
+  height: 260px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
 }
 
 

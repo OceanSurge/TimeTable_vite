@@ -58,6 +58,7 @@ import router from "../../router";
 
 export default defineComponent({
   name: "addLaboratory",
+
   setup() {
     const upload = ref({});
     const ruleForm = ref({})
@@ -65,6 +66,7 @@ export default defineComponent({
       peopleAmount: 30,
       machineAmount: 30
     });
+
     const openCenter = () => {
       ElMessage({
         message: '居中的文字',
@@ -72,17 +74,17 @@ export default defineComponent({
         duration: 0,
         showClose: true
       });
-    }
+    };
+
     const submit = () => {
       axios({
         method: "POST",
         url: "addLaboratory",
         data: laboratory.value
       }).then(resp => {
-
         router.push("/LaboratoryManage")
       });
-    }
+    };
 
     const clear = () => {
       (upload.value as typeof ElUpload).clearFiles();
@@ -92,19 +94,19 @@ export default defineComponent({
         params:
             {"url": laboratory.value.img}
       })
-    }
+    };
 
     const clearAll = () => {
       (ruleForm.value as typeof ElForm).resetFields();
       clear();
-    }
+    };
 
     const handleAvatarSuccess = (response:any) => {
       laboratory.value.img = response.data.url
-    }
+    };
     const cancel = () => {
       router.push("/LaboratoryManage")
-    }
+    };
 
     return {
       upload,

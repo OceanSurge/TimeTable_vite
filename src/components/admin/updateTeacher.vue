@@ -25,24 +25,34 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, Ref} from 'vue';
+import {defineComponent, ref, Ref, computed} from 'vue';
 import {User} from "../../datasource";
 import axios from "axios";
 import router from "../../router";
+import {Store, useStore} from "vuex";
+import {State} from "../../store";
 
 export default defineComponent({
   name: "updateTeacher",
   setup() {
-    const teacher: Ref<User> = ref({})
-    axios({
-      method: "POST",
-      url: "getTeacherById",
-      params: {
-        "id": JSON.parse(sessionStorage.getItem("teacherId") as string)
-      }
-    }).then(resp => {
-      teacher.value = resp.data.data.teacherById
-    })
+    const store: Store<State> = useStore();
+
+    const teacher: Ref<User> = ref({});
+    const TeacherId = computed(() => store.state.TeacherId);
+    console.log(TeacherId.value)
+    console.log(store.state.LoginUser)
+    const getTeacherById = () => {
+      axios({
+        method: "POST",
+        url: "getTeacherById",
+        params: {
+          "id": TeacherId.value
+        }
+      }).then(resp => {
+        teacher.value = resp.data.data.teacherById
+      })
+    }
+    getTeacherById();
     const submit = () => {
       axios({
         method: "POST",

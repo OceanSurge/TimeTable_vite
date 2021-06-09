@@ -68,64 +68,72 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, Ref, ref} from 'vue';
+import {defineComponent, Ref, ref, onMounted} from 'vue';
 import axios from "axios";
 import {queryInfo, User} from "../../datasource";
 import router from "../../router";
+import {ElMessage} from "element-plus";
+import {State} from "../../store";
+import {Store, useStore} from "vuex";
+import {UPDATE_TeacherId} from "../../store/VuexTypes";
 
 export default defineComponent({
   name: "TeacherManage",
   setup() {
+    const store: Store<State> = useStore();
+
     const queryInfo: Ref<queryInfo> = ref({
       query: "",
       pageNum: 1,
       pageSize: 5
     });
-    const teachers: Ref<User[]> = ref([])
-    const total: Ref<number> = ref(0)
-    axios({
-      method: "POST",
-      url: "allTeacher",
-      data: queryInfo.value
-    }).then(resp => {
-      teachers.value = resp.data.data.teachers
-      total.value = resp.data.data.number
-    })
+
+    const teachers: Ref<User[]> = ref([]);
+    const total: Ref<number> = ref(0);
+
     const getUserList = () => {
       axios({
         method: "POST",
         url: "allTeacher",
         data: queryInfo.value
       }).then(resp => {
-
         teachers.value = resp.data.data.teachers
         total.value = resp.data.data.number
       })
-    }
+    };
+
+    onMounted(() => {
+      getUserList()
+    });
+
     const handleSizeChange = (newSize: number) => {
       queryInfo.value.pageSize = newSize;
       getUserList();
-    }
+    };
+
     const handleCurrentChange = (newPage: number) => {
       queryInfo.value.pageNum = newPage;
       getUserList();
-    }
+    };
+
     const updateState = (teacherInfo: User) => {
-      // console.log(teacherInfo)
       axios({
         method: "POST",
         url: "updateState",
         data: teacherInfo
       }).then(resp => {
-        // console.log(resp.data.message)
-        // alert(resp.data.message)
-
+        ElMessage.success({
+          message: '恭喜你，这是一条成功消息',
+          type: 'success'
+        });
       })
-    }
+    };
+
     const updateTeacher = (id: number) => {
-      sessionStorage.setItem("teacherId", JSON.stringify(id))
-      router.push("/updateTeacher")
-    }
+      store.commit(UPDATE_TeacherId, id as number);
+      router.push("/updateTeacher");
+    };
+
     const deleteTeacher = (id: number) => {
       axios({
         method: "POST",
@@ -138,9 +146,11 @@ export default defineComponent({
         getUserList()
       })
     }
+
     const addTeacher = () => {
       router.push("/addTeacher")
     }
+
     return {
       queryInfo,
       total,

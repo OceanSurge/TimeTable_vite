@@ -17,30 +17,44 @@ import {defineComponent, ref, Ref} from 'vue';
 import axios from "axios";
 import {User} from ".././datasource"
 import router from "../router";
+import {Store, useStore} from "vuex";
+import {State} from "../store";
+import {UPDATE_LoginUser} from "../store/VuexTypes";
+import {ElMessage} from "element-plus";
 
 export default defineComponent({
   name: "Login",
   setup() {
+    const store: Store<State> = useStore();
+
     const user: Ref<User> = ref({
       username: "admin",
       password: "000000"
-    })
+    });
+
     const commit = () => {
       axios({
         method: "POST",
         url: "login",
-        data:user.value
+        data: user.value
       }).then(resp => {
-        console.log(resp.data)
-        if (resp.data.code == 200){
-          alert("成功")
+        if (resp.data.code == 200) {
+          ElMessage.success({
+            message: '登陆成功',
+            type: 'success'
+          });
           router.push("/Main")
-          sessionStorage.setItem("loginUser",JSON.stringify(resp.data.data.user))
-        }if (resp.data.code == 500){
-          alert(resp.data.msg)
+          store.commit(UPDATE_LoginUser, resp.data.data.user as User)
+        }
+        if (resp.data.code == 500) {
+          ElMessage.warning({
+            message: '登陆失败',
+            type: 'warning'
+          });
         }
       })
-    }
+    };
+
     return {
       user,
       commit
