@@ -21,7 +21,7 @@
               <el-button class="button" type="text" @click="deleteCourse">退选</el-button>
             </div>
           </template>
-          <div v-for="timeTable in selectCourseDetail" :key="timeTable.courseName" class="text item">
+          <div v-for="timeTable in selectCourseDetail" class="text item">
             {{ '第' + timeTable.week + '周周' + timeTable.weekDay + '第' + timeTable.lesson + '节课' }}
           </div>
         </el-card>
@@ -32,15 +32,19 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, Ref} from 'vue';
+import {defineComponent, ref, Ref, computed} from 'vue';
 import {Course, TimeTable, User} from "../../datasource";
 import axios from "axios";
 import router from "../../router";
+import {Store, useStore} from "vuex";
+import {State} from "../../store";
 
 export default defineComponent({
   name: "teacherTimeTableDetails",
   setup() {
-    const userLogin: User = JSON.parse(sessionStorage.getItem("loginUser") as string) as User
+    const store: Store<State> = useStore();
+
+    const userLogin = computed(() => store.state.LoginUser)
     const selectCourseDetail: Ref<TimeTable[]> = ref([]);
     const courses: Ref<Course[]> = ref([]);
     const courseName: Ref<string> = ref("");
@@ -56,18 +60,20 @@ export default defineComponent({
         selectCourseDetail.value = resp.data.data.courseName
       })
     };
+
     selectCourseDetails();
     const allCourse = () => {
       axios({
         method: "POST",
         url: "/allCourseByState",
-        data: JSON.parse(sessionStorage.getItem("loginUser") as string) as User
+        data: userLogin.value
       }).then(resp => {
-        courses.value = resp.data.data.courses
+        courses.value = resp.data.data.courses as Course[]
         sessionStorage.setItem("currentCourseByState", courses.value[0].courseName as string)
         courseName.value = courses.value[0].courseName as string
       })
     };
+
     allCourse();
     const selected = (news: string) => {
       courseName.value = news;
@@ -80,9 +86,10 @@ export default defineComponent({
         }
       }).then(resp => {
         selectCourseDetail.value = resp.data.data.courseName
-        console.log(selectCourseDetail.value)
+        // console.log(selectCourseDetail.value)
       })
-    }
+    };
+
     const deleteCourse = () => {
       axios({
         method: "POST",

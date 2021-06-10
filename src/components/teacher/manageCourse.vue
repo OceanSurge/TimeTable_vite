@@ -15,7 +15,8 @@
                    :default-active="active">
             <el-menu-item-group>
               <template #title>您的课程列表</template>
-              <el-menu-item v-for="course in courses" :index="course.courseName">
+              <el-menu-item v-for="course in courses"
+                            :index="course.courseName">
                 {{ course.courseName }}
               </el-menu-item>
             </el-menu-item-group>
@@ -51,6 +52,7 @@
               <el-button type="warning" @click="reset">重置</el-button>
             </el-form-item>
           </el-form>
+          <router-view/>
         </el-main>
       </el-container>
     </el-container>
@@ -58,32 +60,36 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, Ref} from 'vue';
+import {defineComponent, ref, Ref, computed, onMounted} from 'vue';
 import axios from "axios";
 import {Course, ResultVO, User} from "../../datasource";
 import router from "../../router";
 import {ElForm} from "element-plus";
+import {Store, useStore} from "vuex";
+import {State} from "../../store";
 
 export default defineComponent({
   name: "addCourse",
   setup() {
+    const store: Store<State> = useStore();
+
     const courses: Ref<Course[]> = ref([]);
     const courseDetail: Ref<Course> = ref({});
     const form = ref({});
-    const user: Ref<User> = ref(JSON.parse(sessionStorage.getItem("loginUser") as string) as User);
-    const active: string | null = sessionStorage.getItem("currentCourse");
+    const user = computed(() => store.state.LoginUser as User)
+    const active: string = sessionStorage.getItem("currentCourse") as string;
     const allCourse = () => {
       axios({
         method: "POST",
         url: "/allCourse",
-        data: JSON.parse(sessionStorage.getItem("loginUser") as string) as User
+        data: user.value
       }).then(resp => {
         courses.value = resp.data.data.courses
         sessionStorage.setItem("currentCourse", resp.data.data.courses[0].courseName)
         courseDetail.value = resp.data.data.courses[0]
       })
     }
-    allCourse()
+
     const addCourse = () => {
       router.push("/addCourse")
     }
@@ -100,8 +106,13 @@ export default defineComponent({
       })
     }
     const reset = () => {
-      selected(sessionStorage.getItem("currentCourse") as string)
+      allCourse();
     }
+
+    onMounted(() => {
+      allCourse();
+      selected(sessionStorage.getItem("currentCourse") as string);
+    })
     return {
       addCourse,
       courses,
@@ -117,7 +128,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.char{
+.char {
   font-size: 30px;
 }
 </style>

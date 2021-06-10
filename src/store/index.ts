@@ -4,12 +4,12 @@ import {queryInfo, User} from "../datasource";
 import * as vxt from "./VuexTypes";
 
 export interface State {
-    LoginUser?: User;
+    LoginUser?: User | null;
     TeacherId?: number;
 };
 
 const myState: State = {
-    LoginUser: JSON.parse(sessionStorage.getItem("LoginUser") as string) as User || {},
+    LoginUser: JSON.parse(sessionStorage.getItem("LoginUser") as string) as User || null,
     TeacherId: JSON.parse(sessionStorage.getItem("TeacherId") as string) as number || 0,
 }
 
@@ -22,6 +22,11 @@ const myMutations: MutationTree<State> = {
         state.TeacherId = data;
         sessionStorage.setItem("TeacherId", JSON.stringify(data))
     },
+    [vxt.RESET_LoginUser]: (state) => {
+        state.LoginUser = null;
+        sessionStorage.removeItem("LoginUser");
+        sessionStorage.removeItem("currentPath");
+    }
 }
 
 const myActions: ActionTree<State, State> = {}

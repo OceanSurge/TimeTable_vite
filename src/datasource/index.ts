@@ -1,9 +1,13 @@
+import {Store, useStore} from "vuex";
+import {State} from "../store";
+import {computed} from "vue";
+
 export interface User {
-    id?: number;
-    username?: string;
-    password?: string;
-    role?: string;
-    deleted?: number;
+    id?: number | null;
+    username?: string | null;
+    password?: string | null;
+    role?: string | null;
+    deleted?: number | null;
 }
 
 export interface Menu {
@@ -67,9 +71,11 @@ export interface Course {
 }
 
 export interface CourseSelectList {
-    weekDay:number[];
+    weekDay: number[];
     lesson: number[];
     week: number;
 }
+
+
 
 

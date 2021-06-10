@@ -1,6 +1,9 @@
 import {createRouter, createWebHashHistory} from "vue-router";
 import {ref, Ref} from "vue";
 import {User} from "../datasource";
+import {Store, useStore} from "vuex";
+import {State} from "../store";
+import store from ".././store/index"
 
 
 const router = createRouter({
@@ -57,8 +60,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from) => {
-    const user: Ref<User> = ref(JSON.parse(sessionStorage.getItem("loginUser") as string) as User)
-    if (user.value == null && to.path != "/Login") {
+    const user = store.state.LoginUser
+    if (user == null && to.path != "/Login") {
         router.push("/")
     } else {
         return true;

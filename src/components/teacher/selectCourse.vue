@@ -65,32 +65,41 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, Ref} from 'vue';
+import {defineComponent, ref, Ref, computed, onMounted} from 'vue';
 import axios from "axios";
 import {Course, CourseSelectList, Laboratory, User} from "../../datasource";
 import router from "../../router";
+import {Store, useStore} from "vuex";
+import {State} from "../../store";
 
 export default defineComponent({
   name: "selectCourse",
   setup() {
+    const store: Store<State> = useStore();
+    const userLogin = computed(() => store.state.LoginUser as User);
+
     const courses: Ref<Course[]> = ref([]);
     const course: Ref<Course> = ref({});
     const active: string | null = sessionStorage.getItem("currentSelectCourse");
     const laboratoryActive: string | null = sessionStorage.getItem("laboratoryActive");
     const laboratories: Ref<Laboratory[]> = ref([])
-    const selectMessage: Ref<{ laboratoryName?: string; courseName?: string }> = ref({})
+    const selectMessage: Ref<{ laboratoryName?: string; courseName?: string }> = ref({
+      laboratoryName: sessionStorage.getItem("laboratoryActive") as string,
+      courseName: sessionStorage.getItem("currentSelectCourse") as string
+    });
     const results: Ref<CourseSelectList[]> = ref([]);
     const allCourse = () => {
       axios({
         method: "POST",
         url: "/allCourse",
-        data: JSON.parse(sessionStorage.getItem("loginUser") as string) as User
+        data: userLogin.value
       }).then(resp => {
         courses.value = resp.data.data.courses
         sessionStorage.setItem("currentSelectCourse", resp.data.data.courses[0].courseName)
         selectMessage.value.courseName = resp.data.data.courses[0].courseName
       })
-    }
+    };
+
     const allLaboratory = () => {
       axios({
         method: "POST",
@@ -100,10 +109,9 @@ export default defineComponent({
         sessionStorage.setItem("laboratoryActive", resp.data.data.allLaboratory[0].laboratoryName);
         selectMessage.value.laboratoryName = resp.data.data.allLaboratory[0].laboratoryName
       })
-    }
-    const selected = (news: string) => {
-      selectMessage.value.courseName = news;
-      sessionStorage.setItem("currentSelectCourse", news)
+    };
+
+    const selectCourseByName = (news: string) => {
       axios({
         method: "POST",
         url: "selectCourseByName",
@@ -113,6 +121,12 @@ export default defineComponent({
       }).then(resp => {
         course.value = resp.data.data.course
       })
+    };
+
+    const selected = (news: string) => {
+      selectMessage.value.courseName = news;
+      sessionStorage.setItem("currentSelectCourse", news)
+      selectCourseByName(news);
       selectCourse();
     }
     const change = (news: string) => {
@@ -125,8 +139,8 @@ export default defineComponent({
         method: "POST",
         url: "selectCourse",
         params: {
-          courseName: selectMessage.value.courseName,
-          laboratoryName: selectMessage.value.laboratoryName
+          courseName: sessionStorage.getItem("currentSelectCourse") as string,
+          laboratoryName: sessionStorage.getItem("laboratoryActive") as string
         }
       }).then(resp => {
         // console.log(resp.data[0].weekDay[0] as number)
@@ -134,12 +148,8 @@ export default defineComponent({
         results.value = resp.data.data
         // console.log(Array.from(results.value[0].weekDay[0]))
       })
-    }
-    allCourse()
-    allLaboratory()
-    selectCourse()
-    // selectCourse()
-    console.log(selectMessage)
+    };
+
     const selectingCourse = (result: CourseSelectList) => {
       axios({
         method: "POST",
@@ -150,12 +160,16 @@ export default defineComponent({
           laboratory: selectMessage.value.laboratoryName
         }
       }).then(resp => {
+        sessionStorage.setItem("selectingCourse", JSON.stringify(result));
         router.push("/teacherTimeTableDetails")
-        sessionStorage.setItem("selectingCourse", JSON.stringify(result))
-      });
-
-    }
-    console.log(selectMessage)
+      })
+    };
+    onMounted(() => {
+      allCourse();
+      allLaboratory();
+      selectCourse();
+      selectCourseByName(sessionStorage.getItem("currentSelectCourse") as string);
+    })
     return {
       courses,
       active,

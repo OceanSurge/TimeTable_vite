@@ -6,18 +6,18 @@
         :with-header="false"
         size="300px">
       <el-card class="box-card">
-        <div  class="text item">
-          用户名：{{loginUser.username}}
+        <div class="text item">
+          用户名：{{ loginUser.username }}
         </div>
       </el-card>
       <el-card class="box-card">
-        <div  class="text item">
-          密码：{{loginUser.password}}
+        <div class="text item">
+          密码：{{ loginUser.password }}
         </div>
       </el-card>
       <el-card class="box-card">
-        <div  class="text item">
-          角色：{{loginUser.role}}
+        <div class="text item">
+          角色：{{ loginUser.role }}
         </div>
       </el-card>
     </el-drawer>
@@ -41,7 +41,10 @@
                    @close="handleClose"
                    :collapse="isCollapse"
                    :router="true">
-            <el-menu-item :index="menu.path" v-for="menu of menus" class="sideBar" @click="changePath(menu.path)"
+            <el-menu-item :index="menu.path"
+                          v-for="menu of menus"
+                          class="sideBar"
+                          @click="changePath(menu.path)"
                           :key="menu.id">
               <i class="el-icon-menu"></i>
               <template #title>{{ menu.menuName }}</template>
@@ -57,10 +60,13 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, Ref, ref} from 'vue';
+import {computed, defineComponent, Ref, ref, onMounted} from 'vue';
 import axios from "axios";
 import {User, Menu} from "../datasource";
 import router from "../router";
+import {Store, useStore} from "vuex";
+import {State} from "../store";
+import {RESET_LoginUser} from "../store/VuexTypes";
 
 export default defineComponent({
   name: "Main",
@@ -73,27 +79,50 @@ export default defineComponent({
     }
   },
   setup() {
+    const store: Store<State> = useStore();
+
     const isCollapse = ref(false);
     const menus: Ref<Menu[]> = ref([]);
     const currentPath = sessionStorage.getItem("currentPath");
-    const loginUser: Ref<User> = ref(JSON.parse(sessionStorage.getItem("loginUser") as string) as User);
+
+    const loginUser = computed(() => {
+      if (store.state.LoginUser) {
+        return store.state.LoginUser
+      } else {
+        return {
+          username: null,
+          role: null
+        } as User
+      }
+    });
+
     const changePath = (path: string) => {
       sessionStorage.setItem("currentPath", path)
     };
+
     const exit = () => {
-      sessionStorage.removeItem("loginUser");
-      router.push("/")
-    }
-    axios({
-      method: "POST",
-      url: "main",
-      params: {
-        role: (JSON.parse(sessionStorage.getItem("loginUser") as string) as User).role
-      }
-    }).then(resp => {
-      menus.value = resp.data.data.menus
-    })
+      store.commit(RESET_LoginUser);
+      router.push("/Login")
+    };
+
+    const main = () => {
+      axios({
+        method: "POST",
+        url: "main",
+        params: {
+          role: (loginUser.value as User).role
+        }
+      }).then(resp => {
+        menus.value = resp.data.data.menus
+      })
+    };
+
+    onMounted(() => {
+      main();
+    });
+
     const drawer: Ref<boolean> = ref(false);
+
     return {
       isCollapse,
       menus,
